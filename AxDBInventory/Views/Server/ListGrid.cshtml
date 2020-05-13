@@ -1,0 +1,204 @@
+﻿@model List<AxDBInventory.Models.ServerModel>
+@{
+    ViewBag.Title = "List of Servers";
+}
+
+<style>
+    #header_grid > thead > tr th:nth-child(2) {
+        width: 110px;
+    }
+
+    #header_grid > thead > tr th:nth-child(3) {
+        width: 200px;
+    }
+
+    #cadastro {
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    #cadastro_header {
+        border-bottom: 1px #dddddd solid;
+    }
+
+    #cadastro_body {
+        margin-top: 20px
+    }
+
+    #header_grid {
+        margin-bottom: 20px
+    }
+</style>
+<div id="cadastro">
+    <section id="cadastro_header">
+        <h1>@ViewBag.Title</h1>
+    </section>
+    <section id="cadastro_body">
+        <div id="header_grid" class="row">
+            <div class="col-lg-12">
+                <a id="btn_add" class="btn btn-success" role="button"><i class="glyphicon glyphicon-plus"></i> Add</a>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 ">
+                <table id="table-servers" class="table table-bordered table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>ServerName</th>
+                            <th>IPAddress</th>
+                            <th>Domain</th>
+                            <th>BusinessOwners</th>
+                            <th>OperatingSystem</th>
+                            <th>LastReboot</th>
+                            @*<th>CPUCores</th>
+                            <th>RAM_GB</th>
+                            <th>ServicePack</th>
+                            <th>FQDN</th>
+                            <th>ComputerName</th>
+                            <th>Manufacturer</th>
+                            <th>Description</th>
+                            <th>Environment</th>
+                            <th>Application</th>
+                            <th>BusinessImpact</th>
+                            <th>SystemLogin</th>*@
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+
+                        <tr server-id="@item.ServerName">
+                            <td>
+                                <a class="btn btn-primary btn-sm btn-alterar" role="button"><i class="glyphicon glyphicon-pencil"></i></a>
+                                <a class="btn btn-danger btn-sm btn-excluir" role="button"><i class="glyphicon glyphicon-trash"></i></a>
+                            </td>
+                            <td>@item.ServerName</td>
+                            <td>@item.IPAddress</td>
+                            <td>@item.Domain</td>
+                            <td>@item.BusinessOwners</td>
+                            <td>@item.OperatingSystem</td>
+                            <td>@item.LastReboot</td>
+                            @*
+                            <td>@item.ServicePack</td>
+                            <td>@item.CPUCores</td>
+                            <td>@item.RAM_GB</td>
+                            <td>@item.FQDN</td>
+                            <td>@item.ComputerName</td>
+                            <td>@item.Manufacturer</td>
+                            <td>@item.Description</td>
+                            <td>@item.Environment</td>
+                            <td>@item.Application</td>
+                            <td>@item.BusinessImpact</td>
+                            <td>@item.SystemLogin</td>*@
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+@*@Html.Hidden("id_cadastro")*@
+<div id="modal_cadastro" class="form-horizontal invisivel" role="dialog">
+    <fieldset>
+        <div class="row">
+            <div class="form-group">
+                @Html.Label("txt_servername", "Servername", new { @class = "col-md-3 control-label" })
+                <div class="col-md-12">
+                    @Html.TextBox("txt_servername", null, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("txt_ipaddress", "IP", new { @class = "col-md-3 control-label" })
+                <div class="col-md-12">
+                    @Html.TextBox("txt_ipaddress", null, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <div class="modal-footer">
+                        <a id="btn_sair" class="btn btn-default" role="button" data-dismiss="modal"><i class="glyphicon glyphicon-remove"></i> Back</a>
+                        <a id="btn_confirmar" class="btn btn-primary" role="button"><i class="glyphicon glyphicon-ok"></i> Save</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </fieldset>
+</div>
+@section Scripts{
+    <script>
+        //function to show the form
+         function open_form(dados) {
+             $('#txt_servername').val(dados.Servername);
+             $('#txt_ipaddress').val(dados.IPAddress);
+
+             var modal_cadastro = $('#modal_cadastro')
+
+            bootbox.dialog({
+                title: '@ViewBag.Title',
+                message: modal_cadastro
+            })
+            .on('shown.bs.modal', function () {
+                modal_cadastro.show(0, function () {
+                    $('#txt_servername').focus();
+                });
+            })
+            .on('hidden.bs.modal', function () {
+                modal_cadastro.hide().appendTo('body');
+            });
+        }
+
+        $(document).on('click', '#btn_add', function () {
+            open_form({ Servername: '', IPAddress: '' });
+        })
+        .on('click', '.btn-alterar', function () {
+               var  btn = $(this),
+                    id = btn.closest('tr').attr('server-id'),
+                    url = '@Url.Action("GetServerByServerName", "Server")',
+                    param = { 'Servername': id };
+
+            $.post(url, param, function (response) {
+                if (response) {
+                    open_form(response);
+                }
+            });
+        })
+        .on('click', '.btn-excluir', function () {
+            var btn = $(this),
+                tr = btn.closest('tr'),
+                id = tr.attr('server-id'),
+                url = '@Url.Action("DeleteServerByName", "Server")',
+                param = { 'Servername': id };
+
+            bootbox.confirm({
+                message: "Do you confirm the exclusion of the server [" + id + "]?",
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-danger'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-success'
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        $.post(url, param, function (response) {
+                            if (response) {
+                                $(tr).remove();
+                            }
+                        });
+                    }
+                }
+            });
+        })
+    </script>
+}
